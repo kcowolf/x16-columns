@@ -15,6 +15,8 @@ ECHO= echo
 MKDIR= mkdir
 
 SRC_C= $(wildcard $(SRC)/*.c)
+SRC_C += $(wildcard $(SRC)/GAME/*.c)
+SRC_C += $(wildcard $(SRC)/GFX/*.c)
 SRC_BIN= $(wildcard $(GFX)/*.BIN)
 
 INCS= -I$(INC) -I$(SRC) -I$(LIBINC)
@@ -33,7 +35,7 @@ all: release
 default: release
 
 clean: cleanobj cleanbin
-	$(RM) -f out/cmd_ out/$(PRG)
+	$(RM) -f out/$(PRG)
 
 cleanbin:
 	$(RM) -f $(OUTBINS)
@@ -44,6 +46,8 @@ cleanobj:
 pre-build:
 	$(MKDIR) -p out
 	$(MKDIR) -p out/src
+	$(MKDIR) -p out/src/GAME
+	$(MKDIR) -p out/src/GFX
 
 out/%.BIN: %.BIN
 	$(CP) $< out/$(notdir $@)
@@ -54,9 +58,5 @@ out/%.o: out/%.s
 out/%.s: %.c
 	$(CC) -t cx16 $(INCS) -Oi -o out/$(<:%.c=%.s) $<
 
-out/cmd_: $(OBJS)
-	$(ECHO) "$(OBJS)" > out/cmd_
-
-out/%.PRG: out/cmd_ $(LIBX16) $(BINS)
-	$(LD) -t cx16 -o $@ @out/cmd_ $(LIBX16) cx16.lib
-	$(RM) out/cmd_
+out/%.PRG: $(OBJS) $(LIBX16) $(BINS)
+	$(LD) -t cx16 -o $@ $(OBJS) $(LIBX16) cx16.lib
