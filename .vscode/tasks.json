@@ -45,7 +45,8 @@
                 "panel": "shared",
                 "showReuseMessage": false,
                 "clear": true
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "clean",
