@@ -1,7 +1,9 @@
+#include <cbm.h>
 #include <cx16.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <cbm.h>
+#include <stdlib.h>
+#include <time.h>
 #include "load.h"
 #include "vload.h"
 
@@ -15,6 +17,8 @@ void initVera();
 
 int main()
 {
+    srand(time(NULL));
+
     initVera();
 
     GAME_init();
@@ -28,6 +32,8 @@ int main()
     {
         GAME_update();
         SCRN_update();
+
+        waitvsync();
     }
 
     return 0;
@@ -35,8 +41,8 @@ int main()
 
 void initVera()
 {
-    uint8_t x = 0;
-    uint8_t y = 0;
+    uint8_t i = 0;
+    uint8_t j = 0;
 
     // Initialize VERA
     VERA.control = 0;
@@ -57,16 +63,21 @@ void initVera()
     VERA.layer1.hscroll = 0;
     VERA.layer1.vscroll = 0;
 
-    VERA.display.video = VERA_VIDEO_LAYER1_ENABLED | VERA_VIDEO_OUTPUT_VGA;
+    VERA.display.video = VERA_VIDEO_LAYER1_ENABLED | VERA_VIDEO_SPRITES_ENABLED | VERA_VIDEO_OUTPUT_VGA;
 
     videomode(VIDEOMODE_40x30);
 
-    for (y = 0; y < GFX_PLANE_HEIGHT; y++)
+    for (i = 0; i < GFX_PLANE_WIDTH; i++)
     {
-        for (x = 0; x < GFX_PLANE_WIDTH; x++)
+        for (j = 0; j < GFX_PLANE_HEIGHT; j++)
         {
-            //GFX_setBackgroundTile(x, y, 0);
-            GFX_setForegroundTile(x, y, 0);
+            //GFX_setBackgroundTile(i, j, 0);
+            GFX_setForegroundTile(i, j, 0);
         }
+    }
+
+    for (i = 0; i < VERA_SPRITE_COUNT; i++)
+    {
+        GFX_setSpriteDepth(i, VERA_SPRITE_DISABLED);
     }
 }

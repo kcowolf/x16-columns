@@ -64,4 +64,6 @@
 #define TMGEMS6_PIXEL_HEIGHT 16
 #define TMGEMS6_TILE_COUNT 4
 
+#define SPR1_FILENAME "spr1.bin"
+
 #endif

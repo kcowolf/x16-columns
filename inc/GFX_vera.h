@@ -1,4 +1,4 @@
-// Based on https://github.com/visrealm/supaplex-x16/blob/37e9a50ef796b1e7abb0bb5156cd1fd15106f84d/common/vera/constants.asm
+// Originally based on https://github.com/visrealm/supaplex-x16/blob/37e9a50ef796b1e7abb0bb5156cd1fd15106f84d/common/vera/constants.asm
 
 // Commander X16
 //
@@ -115,3 +115,27 @@
 // Other Vera addresses
 // -----------------------------------------------------------------------------
 #define VERA_PALETTE 0x1FA00
+#define VERA_SPRITES 0x1FC00
+
+// Sprites
+// -----------------------------------------------------------------------------
+#define VERA_SPRITE_COUNT     128
+#define VERA_SPRITE_SIZE      8 // bytes
+
+#define VERA_SPRITE_MODE_4BPP 0x00 << 7
+#define VERA_SPRITE_MODE_8BPP 0x01 << 7
+
+#define VERA_SPRITE_DISABLED  0x00 << 2
+#define VERA_SPRITE_BELOW_L0  0x01 << 2
+#define VERA_SPRITE_BELOW_L1  0x02 << 2
+#define VERA_SPRITE_ABOVE_L1  0x03 << 2
+#define VERA_SPRITE_HFLIP     0x01
+#define VERA_SPRITE_VFLIP     0x02
+#define VERA_SPRITE_WIDTH_8   0x00 << 4
+#define VERA_SPRITE_WIDTH_16  0x01 << 4
+#define VERA_SPRITE_WIDTH_32  0x02 << 4
+#define VERA_SPRITE_WIDTH_64  0x03 << 4
+#define VERA_SPRITE_HEIGHT_8  0x00 << 6
+#define VERA_SPRITE_HEIGHT_16 0x01 << 6
+#define VERA_SPRITE_HEIGHT_32 0x02 << 6
+#define VERA_SPRITE_HEIGHT_64 0x03 << 6
