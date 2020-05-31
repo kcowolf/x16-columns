@@ -4,8 +4,10 @@
 #include "GAME.h"
 #include "GFX.h"
 #include "GFX_util.h"
+#include "INPT.h"
 
 #define BANKED_RAM_START 0xA000
+#define BUTTON_LOCK_FRAMES 5
 #define GEMS_FOR_MATCH 3
 #define GEMS_INITIAL_COLUMN 3
 #define GEMS_INITIAL_ROW 2
@@ -27,6 +29,7 @@ uint8_t GAME_gemX;
 uint8_t GAME_gemY;
 
 static uint8_t checkForMatches();
+static void checkInput();
 static void clearMatches();
 static void gravity();
 static void setNextGems();
@@ -120,7 +123,7 @@ void GAME_update()
                 }
             }
 
-            // TODO -- Check for input.
+            checkInput();
             break;
         case GAME_CHECK_FOR_MATCHES:
         {
@@ -252,6 +255,53 @@ static uint8_t checkForMatches()
     }
 
     return matchesTotal;
+}
+
+static void checkInput()
+{
+    if (INPT_state & INPT_DOWN_MASK)
+    {
+        if (GAME_gemY + 1 < GAME_BOARD_HEIGHT && GAME_board[GAME_gemX][GAME_gemY + 1] == 0)
+        {
+            GAME_gemY++;
+            GAME_gemsFallTimer = GAME_gemsFallTimerHalf;
+        }
+        else if (GAME_gemsFallTimer > GAME_gemsFallTimerHalf)
+        {
+            GAME_gemsFallTimer = GAME_gemsFallTimerHalf;
+        }
+
+        INPT_lockUpDown(BUTTON_LOCK_FRAMES);
+    }
+
+    if (INPT_state & INPT_RIGHT_MASK)
+    {
+        if (GAME_gemX + 1 < GAME_BOARD_WIDTH && GAME_board[GAME_gemX + 1][GAME_gemY] == 0)
+        {
+            GAME_gemX++;
+        }
+
+        INPT_lockLeftRight(BUTTON_LOCK_FRAMES);
+    }
+    else if (INPT_state & INPT_LEFT_MASK) // Right takes priority if both are pressed.
+    {
+        if (GAME_gemX != 0 && GAME_board[GAME_gemX - 1][GAME_gemY] == 0)
+        {
+            GAME_gemX--;
+        }
+
+        INPT_lockLeftRight(BUTTON_LOCK_FRAMES);
+    }
+
+    if (INPT_state & INPT_ACTION_MASK)
+    {
+        uint8_t gem = GAME_currentGems[2];
+        GAME_currentGems[2] = GAME_currentGems[1];
+        GAME_currentGems[1] = GAME_currentGems[0];
+        GAME_currentGems[0] = gem;
+
+        INPT_lockAction();
+    }
 }
 
 static void clearMatches()

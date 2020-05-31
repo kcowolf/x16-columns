@@ -1,5 +1,6 @@
 #include <cbm.h>
 #include <cx16.h>
+#include <joystick.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -11,6 +12,7 @@
 #include "GFX.h"
 #include "GFX_util.h"
 #include "GFX_vera.h"
+#include "INPT.h"
 #include "SCRN.h"
 
 void initVera();
@@ -18,9 +20,11 @@ void initVera();
 int main()
 {
     srand(time(NULL));
+    joy_install(cx16_std_joy);
 
     initVera();
 
+    INPT_init();
     GAME_init();
     if (SCRN_init() == false)
     {
@@ -30,6 +34,7 @@ int main()
 
     while(1)
     {
+        INPT_update();
         GAME_update();
         SCRN_update();
 

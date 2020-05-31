@@ -8,11 +8,6 @@
 #include "GFX_vera.h"
 #include "SCRN.h"
 
-void clearGems();
-void drawGems();
-void drawNextGems();
-void redrawField();
-
 #define BANK_RAM_START 0xA000
 
 #define GEMS_COUNT 7
@@ -41,6 +36,11 @@ void redrawField();
 #define GEM_PIXEL_H 16
 
 #define SPRITE_16x16_BYTES 128
+
+static void clearGems();
+static void drawGems();
+static void drawNextGems();
+static void redrawField();
 
 const uint16_t* gemTiles[GEMS_COUNT] =
 {
@@ -158,17 +158,17 @@ void SCRN_update()
     }
 }
 
-void clearGems()
+static void clearGems()
 {
     int8_t i;
 
     for(i = 2; i >= 0; i--)
     {
         GFX_setSpriteDepth(i, VERA_SPRITE_DISABLED);
-    }    
+    }
 }
 
-void drawGems()
+static void drawGems()
 {
     int8_t i;
     uint16_t x;
@@ -195,7 +195,7 @@ void drawGems()
     }
 }
 
-void drawNextGems()
+static void drawNextGems()
 {
     int8_t i;
     const uint16_t* gemTileAddr;
@@ -213,7 +213,7 @@ void drawNextGems()
     }
 }
 
-void redrawField()
+static void redrawField()
 {
     uint8_t x;
     uint8_t y;

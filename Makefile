@@ -17,6 +17,7 @@ MKDIR= mkdir
 SRC_C= $(wildcard $(SRC)/*.c)
 SRC_C += $(wildcard $(SRC)/GAME/*.c)
 SRC_C += $(wildcard $(SRC)/GFX/*.c)
+SRC_C += $(wildcard $(SRC)/INPT/*.c)
 SRC_C += $(wildcard $(SRC)/SCRN/*.c)
 SRC_BIN= $(wildcard $(GFX)/*.BIN)
 
@@ -49,6 +50,7 @@ pre-build:
 	$(MKDIR) -p out/src
 	$(MKDIR) -p out/src/GAME
 	$(MKDIR) -p out/src/GFX
+	$(MKDIR) -p out/src/INPT
 	$(MKDIR) -p out/src/SCRN
 
 out/%.BIN: %.BIN
