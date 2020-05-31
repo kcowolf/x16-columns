@@ -142,6 +142,9 @@ void GAME_update()
             break;
         case GAME_CLEAR_MATCHES:
             clearMatches();
+            GAME_state = GAME_MATCHES_CLEARED;
+            break;
+        case GAME_MATCHES_CLEARED:
             GAME_state = GAME_CHECK_FOR_MATCHES;
             break;
         case GAME_GAME_OVER:

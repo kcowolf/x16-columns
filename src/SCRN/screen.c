@@ -19,6 +19,15 @@
 #define GEM5_TILES 0xA028
 #define GEM6_TILES 0xA030
 
+#define EXPLODE0_TILES 0xA038
+#define EXPLODE1_TILES 0xA040
+#define EXPLODE2_TILES 0xA048
+#define EXPLODE3_TILES 0xA050
+#define EXPLODE4_TILES 0xA058
+#define EXPLODE5_TILES 0xA060
+#define EXPLODE6_TILES 0xA068
+#define EXPLODE7_TILES 0xA070
+
 #define BOARD_VISIBLE_ROWS 13
 
 #define BOARD_TILE_X 2
@@ -37,10 +46,17 @@
 
 #define SPRITE_16x16_BYTES 128
 
+#define MATCH_BLINK_FRAMES 16
+#define MATCH_EXPLODE_FRAMES 16
+#define MATCH_TOTAL_FRAMES 32
+
+static void animateMatches();
 static void clearGems();
 static void drawGems();
 static void drawNextGems();
-static void redrawField();
+static void redrawBoard();
+
+static uint8_t matchAnimationFrames;
 
 const uint16_t* gemTiles[GEMS_COUNT] =
 {
@@ -51,6 +67,18 @@ const uint16_t* gemTiles[GEMS_COUNT] =
     (const uint16_t*)GEM4_TILES,
     (const uint16_t*)GEM5_TILES,
     (const uint16_t*)GEM6_TILES,
+};
+
+const uint16_t* explodeTiles[MATCH_EXPLODE_FRAMES / 2] =
+{
+    (const uint16_t*)EXPLODE7_TILES,
+    (const uint16_t*)EXPLODE6_TILES,
+    (const uint16_t*)EXPLODE5_TILES,
+    (const uint16_t*)EXPLODE4_TILES,
+    (const uint16_t*)EXPLODE3_TILES,
+    (const uint16_t*)EXPLODE2_TILES,
+    (const uint16_t*)EXPLODE1_TILES,
+    (const uint16_t*)EXPLODE0_TILES,
 };
 
 const uint16_t gemSpriteByteOffsets[GEMS_COUNT] =
@@ -119,6 +147,14 @@ bool SCRN_init()
     result = result && load_file_host(TMGEMS4_FILENAME, GEM4_TILES);
     result = result && load_file_host(TMGEMS5_FILENAME, GEM5_TILES);
     result = result && load_file_host(TMGEMS6_FILENAME, GEM6_TILES);
+    result = result && load_file_host(TMEXPL0_FILENAME, EXPLODE0_TILES);
+    result = result && load_file_host(TMEXPL1_FILENAME, EXPLODE1_TILES);
+    result = result && load_file_host(TMEXPL2_FILENAME, EXPLODE2_TILES);
+    result = result && load_file_host(TMEXPL3_FILENAME, EXPLODE3_TILES);
+    result = result && load_file_host(TMEXPL4_FILENAME, EXPLODE4_TILES);
+    result = result && load_file_host(TMEXPL5_FILENAME, EXPLODE5_TILES);
+    result = result && load_file_host(TMEXPL6_FILENAME, EXPLODE6_TILES);
+    result = result && load_file_host(TMEXPL7_FILENAME, EXPLODE7_TILES);
     if (!result)
     {
         printf("  failed to load gems\n");
@@ -140,7 +176,7 @@ void SCRN_update()
     switch (GAME_state)
     {
         case GAME_INIT:
-            redrawField();
+            redrawBoard();
             GAME_state = GAME_WAIT_FOR_START;
             break;
         case GAME_GEMS_INITIALIZED:
@@ -150,11 +186,60 @@ void SCRN_update()
             drawGems();
             break;
         case GAME_CHECK_FOR_MATCHES:
-            redrawField();
+            redrawBoard();
             clearGems();
+            matchAnimationFrames = MATCH_TOTAL_FRAMES;
             break;
+        case GAME_WAIT_FOR_MATCHES:
+            animateMatches();
+            if (matchAnimationFrames == 0)
+            {
+                GAME_state = GAME_CLEAR_MATCHES;
+            }
+            break;
+        case GAME_MATCHES_CLEARED:
+            redrawBoard();
         default:
             break;
+    }
+}
+
+static void animateMatches()
+{
+    uint8_t x;
+    uint8_t y;
+    const uint16_t* gemTileAddr;
+
+    matchAnimationFrames--;
+
+    for (x = 0; x < GAME_BOARD_WIDTH; x++)
+    {
+        for (y = 0; y < BOARD_VISIBLE_ROWS; y++)
+        {
+            if (GAME_matches[x][y + GAME_FIRST_VISIBLE_ROW] == 1)
+            {
+                if (matchAnimationFrames >= MATCH_EXPLODE_FRAMES && (matchAnimationFrames / 2) & 1)
+                {
+                    gemTileAddr = gemTiles[0];
+                }
+                else if (matchAnimationFrames >= MATCH_EXPLODE_FRAMES)
+                {
+                    gemTileAddr = gemTiles[GAME_board[x][y + GAME_FIRST_VISIBLE_ROW]];
+                }
+                else
+                {
+                    gemTileAddr = explodeTiles[matchAnimationFrames / 2];
+                }
+
+                GFX_setForegroundTile((x * 2) + BOARD_TILE_X, (y * 2) + BOARD_TILE_Y, *gemTileAddr);
+                gemTileAddr++;
+                GFX_setForegroundTile((x * 2) + BOARD_TILE_X + 1, (y * 2) + BOARD_TILE_Y, *gemTileAddr);
+                gemTileAddr++;
+                GFX_setForegroundTile((x * 2) + BOARD_TILE_X, (y * 2) + BOARD_TILE_Y + 1, *gemTileAddr);
+                gemTileAddr++;
+                GFX_setForegroundTile((x * 2) + BOARD_TILE_X + 1, (y * 2) + BOARD_TILE_Y + 1, *gemTileAddr);
+            }
+        }
     }
 }
 
@@ -213,7 +298,7 @@ static void drawNextGems()
     }
 }
 
-static void redrawField()
+static void redrawBoard()
 {
     uint8_t x;
     uint8_t y;

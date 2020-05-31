@@ -16,6 +16,7 @@ typedef enum
     GAME_CHECK_FOR_MATCHES,
     GAME_WAIT_FOR_MATCHES,   // SCRN will transition after animating the matches.
     GAME_CLEAR_MATCHES,
+    GAME_MATCHES_CLEARED,
     GAME_GAME_OVER
 } GAME_State;
 
