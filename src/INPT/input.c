@@ -8,19 +8,8 @@ static uint8_t leftRightLock;
 static uint8_t upDownLock;
 static bool actionLock;
 
-static const unsigned char joyMasks[INPT_BUTTON_COUNT] =
-{
-    JOY_UP_MASK,
-    JOY_DOWN_MASK,
-    JOY_LEFT_MASK,
-    JOY_RIGHT_MASK,
-    JOY_BTN_1_MASK
-};
-
 void INPT_clearLocks()
 {
-    uint8_t i;
-
     leftRightLock = 0;
     upDownLock = 0;
     actionLock = false;
@@ -35,7 +24,6 @@ void INPT_init()
 
 void INPT_update()
 {
-    uint8_t i;
     uint8_t joyStatus = joy_read(0);
     INPT_state = 0;
 
