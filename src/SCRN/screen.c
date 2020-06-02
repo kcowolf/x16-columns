@@ -94,13 +94,13 @@ const uint16_t gemSpriteByteOffsets[GEMS_COUNT] =
 
 const uint8_t gemPalettes[GEMS_COUNT] =
 {
-    1,
-    1,
-    1,
-    1,
     2,
     2,
-    2
+    2,
+    2,
+    3,
+    3,
+    3
 };
 
 bool SCRN_init()
@@ -132,7 +132,7 @@ bool SCRN_init()
     }
 
     // Load splash tilemap to VRAM
-    result = vload_host(TMBG1_FILENAME, GFX_FOREGROUND_MAP_BASE_ADDR);
+    result = vload_host(TMBG2_FILENAME, GFX_FOREGROUND_MAP_BASE_ADDR);
     if (!result)
     {
         printf("  failed to load bg tilemap\n");

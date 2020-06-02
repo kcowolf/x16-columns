@@ -5,15 +5,17 @@
 
 #define PAL1_FILENAME "pal1.bin"
 
-#define TS1_FILENAME "ts1.bin"
-#define TS1_TILE_COUNT 284
+#define PALBG2_FILENAME "palbg2.bin"
 
-#define TMBG1_FILENAME "tmbg1.bin"
-#define TMBG1_TILE_WIDTH 64
-#define TMBG1_TILE_HEIGHT 32
-#define TMBG1_PIXEL_WIDTH 512
-#define TMBG1_PIXEL_HEIGHT 256
-#define TMBG1_TILE_COUNT 2048
+#define TS1_FILENAME "ts1.bin"
+#define TS1_TILE_COUNT 227
+
+#define TMBG2_FILENAME "tmbg2.bin"
+#define TMBG2_TILE_WIDTH 64
+#define TMBG2_TILE_HEIGHT 32
+#define TMBG2_PIXEL_WIDTH 512
+#define TMBG2_PIXEL_HEIGHT 256
+#define TMBG2_TILE_COUNT 2048
 
 #define TMEXPL0_FILENAME "tmexpl0.bin"
 #define TMEXPL0_TILE_WIDTH 2
