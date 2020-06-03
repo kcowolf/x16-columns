@@ -108,7 +108,7 @@ bool SCRN_init()
     int result;
 
     // Load palette
-    result = vload_host(PAL1_FILENAME, GFX_PALETTE_ADDR);
+    result = vload_host(PAL2_FILENAME, GFX_PALETTE_ADDR);
     if (!result)
     {
         printf("  failed to load palette\n");
