@@ -19,6 +19,7 @@ SRC_C += $(wildcard $(SRC)/GAME/*.c)
 SRC_C += $(wildcard $(SRC)/GFX/*.c)
 SRC_C += $(wildcard $(SRC)/INPT/*.c)
 SRC_C += $(wildcard $(SRC)/SCRN/*.c)
+SRC_C += $(wildcard $(SRC)/TEXT/*.c)
 SRC_BIN= $(wildcard $(GFX)/*.BIN)
 
 INCS= -I$(INC) -I$(SRC) -I$(LIBINC)
@@ -52,6 +53,7 @@ pre-build:
 	$(MKDIR) -p out/src/GFX
 	$(MKDIR) -p out/src/INPT
 	$(MKDIR) -p out/src/SCRN
+	$(MKDIR) -p out/src/TEXT
 
 out/%.BIN: %.BIN
 	$(CP) $< out/$(notdir $@)

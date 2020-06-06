@@ -6,7 +6,6 @@
 #include "GFX_util.h"
 #include "INPT.h"
 
-#define BANKED_RAM_START 0xA000
 #define BUTTON_LOCK_FRAMES 7
 #define GEMS_FOR_MATCH 3
 #define GEMS_INITIAL_COLUMN 3

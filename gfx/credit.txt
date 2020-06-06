@@ -3,3 +3,5 @@ Gem graphics in OGA-gems.png are based on https://opengameart.org/content/small-
 Explosion graphics in OGA-gems.png by Benjamin Stauffer and released under CC-BY 3.0 or CC0.
 
 Background in OGA-bg2.png is based on https://opengameart.org/content/basalt-tiles by Uruktos.  CC0.
+
+Font in OGA-font.png is based on Cursive2 font from https://opengameart.org/content/new-original-grafx2-font-collection by usr_share.  CC0.

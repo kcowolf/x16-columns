@@ -72,9 +72,9 @@ void initVera()
 
     videomode(VIDEOMODE_40x30);
 
-    for (i = 0; i < GFX_PLANE_WIDTH; i++)
+    for (i = 0; i < GFX_LAYER_WIDTH; i++)
     {
-        for (j = 0; j < GFX_PLANE_HEIGHT; j++)
+        for (j = 0; j < GFX_LAYER_HEIGHT; j++)
         {
             //GFX_setBackgroundTile(i, j, 0);
             GFX_setForegroundTile(i, j, 0);

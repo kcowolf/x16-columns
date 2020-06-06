@@ -12,7 +12,7 @@
 #define PALBG2_FILENAME "palbg2.bin"
 
 #define TS1_FILENAME "ts1.bin"
-#define TS1_TILE_COUNT 451
+#define TS1_TILE_COUNT 541
 
 #define TMBG1_FILENAME "tmbg1.bin"
 #define TMBG1_TILE_WIDTH 64
