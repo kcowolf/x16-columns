@@ -1,5 +1,7 @@
 Gem graphics in OGA-gems.png are based on https://opengameart.org/content/small-jewels by shiru8bit.  CC-BY 3.0 or CC0.
 
+Magic gem graphic in OGA-gems.png is based on https://opengameart.org/content/2d-gem-set-32x32 by kungfu4000.  CC0.
+
 Explosion graphics in OGA-gems.png by Benjamin Stauffer and released under CC-BY 3.0 or CC0.
 
 Background in OGA-bg2.png is based on https://opengameart.org/content/basalt-tiles by Uruktos.  CC0.
