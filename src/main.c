@@ -25,7 +25,7 @@ int main()
     initVera();
 
     INPT_init();
-    GAME_init();
+    GAME_init(GAME_ORIGINAL);
     if (SCRN_init() == false)
     {
         // Failed to load resources.

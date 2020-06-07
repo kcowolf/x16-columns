@@ -8,6 +8,12 @@
 
 typedef enum
 {
+    GAME_ORIGINAL,
+    GAME_FLASH
+} GAME_Mode;
+
+typedef enum
+{
     GAME_INIT,               // SCRN will transition after drawing the board.
     GAME_WAIT_FOR_START,
     GAME_INIT_GEMS,
@@ -20,13 +26,14 @@ typedef enum
     GAME_GAME_OVER
 } GAME_State;
 
-void GAME_init();
+void GAME_init(GAME_Mode mode);
 
 void GAME_update();
 
 extern uint8_t GAME_board[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
 extern uint8_t GAME_matches[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
 
+extern GAME_Mode GAME_mode;
 extern GAME_State GAME_state;
 
 extern uint8_t GAME_currentGems[GAME_FALLING_GEMS_COUNT];

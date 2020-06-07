@@ -46,6 +46,13 @@ void GFX_setBackgroundTile
     uint16_t tile
     );
 
+void GFX_setColor
+    (
+    uint8_t paletteIndex,
+    uint8_t colorIndex,
+    uint16_t color
+    );
+
 void GFX_setForegroundTile
     (
     uint8_t x,

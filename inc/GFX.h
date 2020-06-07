@@ -12,7 +12,7 @@
 #define PALBG2_FILENAME "palbg2.bin"
 
 #define TS1_FILENAME "ts1.bin"
-#define TS1_TILE_COUNT 541
+#define TS1_TILE_COUNT 543
 
 #define TMBG1_FILENAME "tmbg1.bin"
 #define TMBG1_TILE_WIDTH 64
@@ -132,6 +132,13 @@
 #define TMGEMS6_PIXEL_WIDTH 16
 #define TMGEMS6_PIXEL_HEIGHT 16
 #define TMGEMS6_TILE_COUNT 4
+
+#define TMGEMSM_FILENAME "tmgemsm.bin"
+#define TMGEMSM_TILE_WIDTH 2
+#define TMGEMSM_TILE_HEIGHT 2
+#define TMGEMSM_PIXEL_WIDTH 16
+#define TMGEMSM_PIXEL_HEIGHT 16
+#define TMGEMSM_TILE_COUNT 4
 
 #define SPR1_FILENAME "spr1.bin"
 

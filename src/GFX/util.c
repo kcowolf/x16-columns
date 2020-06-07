@@ -5,6 +5,8 @@
 #define NULL_CHAR '\0'
 #define FONT_FIRST_CHAR ' '
 
+#define COLORS_PER_PALETTE 16
+
 void GFX_drawForegroundText
     (
     const unsigned char* str,
@@ -46,6 +48,17 @@ void GFX_setBackgroundTile
 {
     vpoke(tile >> 8, (y * GFX_LAYER_WIDTH_TIMES_TWO) + (2 * x) + 1 + GFX_BACKGROUND_MAP_BASE_ADDR);
     vpoke(tile & 0xFF, (y * GFX_LAYER_WIDTH_TIMES_TWO) + (2 * x) + GFX_BACKGROUND_MAP_BASE_ADDR);
+}
+
+void GFX_setColor
+    (
+    uint8_t paletteIndex,
+    uint8_t colorIndex,
+    uint16_t color
+    )
+{
+    vpoke(color >> 8, GFX_PALETTE_ADDR + 1 + (((paletteIndex * COLORS_PER_PALETTE) + (colorIndex)) * 2));
+    vpoke(color & 0xFF, GFX_PALETTE_ADDR + (((paletteIndex * COLORS_PER_PALETTE) + (colorIndex)) * 2));
 }
 
 void GFX_setForegroundTile

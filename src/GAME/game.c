@@ -11,10 +11,16 @@
 #define GEMS_INITIAL_COLUMN 3
 #define GEMS_INITIAL_ROW 2
 
+#define MAGIC_GEM_INDEX 7
+
 #define LEVEL_FALL_TIMERS_COUNT 1
+
+#define MAGIC_GEM_INITIAL_COUNT 128
 
 uint8_t GAME_board[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
 uint8_t GAME_matches[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
+
+GAME_Mode GAME_mode;
 GAME_State GAME_state;
 uint8_t GAME_currentGems[GAME_FALLING_GEMS_COUNT];
 uint8_t GAME_nextGems[GAME_FALLING_GEMS_COUNT];
@@ -27,6 +33,8 @@ uint8_t GAME_gemsFallTimerHalf;
 uint8_t GAME_gemX;
 uint8_t GAME_gemY;
 
+uint8_t magicGemCountdown;
+
 static uint8_t checkForMatches();
 static void checkInput();
 static void clearMatches();
@@ -37,10 +45,12 @@ static void setNextLevel();
 // TODO -- Set these
 const uint8_t levelFallTimers[LEVEL_FALL_TIMERS_COUNT] = { 40 };
 
-void GAME_init()
+void GAME_init(GAME_Mode mode)
 {
     uint8_t x;
     uint8_t y;
+
+    GAME_mode = mode;
 
     for (x = 0; x < GAME_BOARD_WIDTH; x++)
     {
@@ -54,6 +64,7 @@ void GAME_init()
     setNextGems();  // Initialize next.
 
     GAME_level = 0;
+    magicGemCountdown = MAGIC_GEM_INITIAL_COUNT;
 
     GAME_state = GAME_INIT;
 }
@@ -161,96 +172,123 @@ static uint8_t checkForMatches()
 
     uint8_t matchesTotal = 0;
 
-    for (x = 0; x < GAME_BOARD_WIDTH; x++)
+    if (GAME_currentGems[0] == MAGIC_GEM_INDEX)
     {
-        for (y = 0; y < GAME_BOARD_HEIGHT; y++)
+        GAME_matches[GAME_gemX][GAME_gemY - 2] = 1;
+        GAME_matches[GAME_gemX][GAME_gemY - 1] = 1;
+        GAME_matches[GAME_gemX][GAME_gemY] = 1;
+        matchesTotal = 3;
+        GAME_currentGems[0] = 0; // So we stop processing magic gems.
+
+        if (GAME_gemY + 1 != GAME_BOARD_HEIGHT)
         {
-            if (GAME_board[x][y] != 0)
+            uint8_t matchColor = GAME_board[GAME_gemX][GAME_gemY + 1];
+            for (x = 0; x < GAME_BOARD_WIDTH; x++)
             {
-                // Check down.
-                currentMatches = 1;
-                checkY = y + 1;
-                while (checkY < GAME_BOARD_HEIGHT && GAME_board[x][checkY] == GAME_board[x][y])
+                for (y = 0; y < GAME_BOARD_HEIGHT; y++)
                 {
-                    currentMatches++;
-                    checkY++;
-                }
-
-                if (currentMatches >= GEMS_FOR_MATCH)
-                {
-                    matchesTotal += currentMatches;
-
-                    do
+                    if (GAME_board[x][y] == matchColor)
                     {
-                        checkY--;
-                        GAME_matches[x][checkY] = 1;
-                    } while (checkY != y);
+                        GAME_matches[x][y] = 1;
+                        matchesTotal++;
+                    }
                 }
-
-                // Check right.
-                currentMatches = 1;
-                checkX = x + 1;
-                while (checkX < GAME_BOARD_WIDTH && GAME_board[checkX][y] == GAME_board[x][y])
+            }
+        }
+    }
+    else
+    {
+        for (x = 0; x < GAME_BOARD_WIDTH; x++)
+        {
+            for (y = 0; y < GAME_BOARD_HEIGHT; y++)
+            {
+                if (GAME_board[x][y] != 0)
                 {
-                    currentMatches++;
-                    checkX++;
-                }
-
-                if (currentMatches >= GEMS_FOR_MATCH)
-                {
-                    matchesTotal += currentMatches;
-
-                    do
+                    // Check down.
+                    currentMatches = 1;
+                    checkY = y + 1;
+                    while (checkY < GAME_BOARD_HEIGHT && GAME_board[x][checkY] == GAME_board[x][y])
                     {
-                        checkX--;
-                        GAME_matches[checkX][y] = 1;
-                    } while (checkX != x);
-                }
-
-                // Check down-right.
-                currentMatches = 1;
-                checkX = x + 1;
-                checkY = y + 1;
-                while (checkX < GAME_BOARD_WIDTH && checkY < GAME_BOARD_HEIGHT && GAME_board[checkX][checkY] == GAME_board[x][y])
-                {
-                    currentMatches++;
-                    checkX++;
-                    checkY++;
-                }
-
-                if (currentMatches >= GEMS_FOR_MATCH)
-                {
-                    matchesTotal += currentMatches;
-
-                    do
-                    {
-                        checkX--;
-                        checkY--;
-                        GAME_matches[checkX][checkY] = 1;
-                    } while (checkX != x);
-                }
-
-                // Check up-right.
-                currentMatches = 1;
-                checkX = x + 1;
-                checkY = y - 1;
-                while (checkX < GAME_BOARD_WIDTH && checkY >= 0 && GAME_board[checkX][checkY] == GAME_board[x][y])
-                {
-                    currentMatches++;
-                    checkX++;
-                    checkY--;
-                }
-
-                if (currentMatches >= GEMS_FOR_MATCH)
-                {
-                    matchesTotal += currentMatches;
-
-                    do
-                    {
-                        checkX--;
+                        currentMatches++;
                         checkY++;
-                        GAME_matches[checkX][checkY] = 1;
-                    } while (checkX != x);
+                    }
+
+                    if (currentMatches >= GEMS_FOR_MATCH)
+                    {
+                        matchesTotal += currentMatches;
+
+                        do
+                        {
+                            checkY--;
+                            GAME_matches[x][checkY] = 1;
+                        } while (checkY != y);
+                    }
+
+                    // Check right.
+                    currentMatches = 1;
+                    checkX = x + 1;
+                    while (checkX < GAME_BOARD_WIDTH && GAME_board[checkX][y] == GAME_board[x][y])
+                    {
+                        currentMatches++;
+                        checkX++;
+                    }
+
+                    if (currentMatches >= GEMS_FOR_MATCH)
+                    {
+                        matchesTotal += currentMatches;
+
+                        do
+                        {
+                            checkX--;
+                            GAME_matches[checkX][y] = 1;
+                        } while (checkX != x);
+                    }
+
+                    // Check down-right.
+                    currentMatches = 1;
+                    checkX = x + 1;
+                    checkY = y + 1;
+                    while (checkX < GAME_BOARD_WIDTH && checkY < GAME_BOARD_HEIGHT && GAME_board[checkX][checkY] == GAME_board[x][y])
+                    {
+                        currentMatches++;
+                        checkX++;
+                        checkY++;
+                    }
+
+                    if (currentMatches >= GEMS_FOR_MATCH)
+                    {
+                        matchesTotal += currentMatches;
+
+                        do
+                        {
+                            checkX--;
+                            checkY--;
+                            GAME_matches[checkX][checkY] = 1;
+                        } while (checkX != x);
+                    }
+
+                    // Check up-right.
+                    currentMatches = 1;
+                    checkX = x + 1;
+                    checkY = y - 1;
+                    while (checkX < GAME_BOARD_WIDTH && checkY >= 0 && GAME_board[checkX][checkY] == GAME_board[x][y])
+                    {
+                        currentMatches++;
+                        checkX++;
+                        checkY--;
+                    }
+
+                    if (currentMatches >= GEMS_FOR_MATCH)
+                    {
+                        matchesTotal += currentMatches;
+
+                        do
+                        {
+                            checkX--;
+                            checkY++;
+                            GAME_matches[checkX][checkY] = 1;
+                        } while (checkX != x);
+                    }
                 }
             }
         }
@@ -352,17 +390,35 @@ static void setNextGems()
 {
     uint8_t i;
     uint8_t val;
+
+    if (GAME_mode == GAME_ORIGINAL)
+    {
+        magicGemCountdown--;
+        if (magicGemCountdown == 0)
+        {
+            for (i = 0; i < GAME_FALLING_GEMS_COUNT; i++)
+            {
+                GAME_currentGems[i] = GAME_nextGems[i];
+                GAME_nextGems[i] = MAGIC_GEM_INDEX;
+            }
+
+            magicGemCountdown = MAGIC_GEM_INITIAL_COUNT;
+            return;
+        }
+    }
+
     for (i = 0; i < GAME_FALLING_GEMS_COUNT; i++)
     {
         GAME_currentGems[i] = GAME_nextGems[i];
-
-        do
         {
-            val = rand() & 0x7;
-        } while (val > 5);
+            do
+            {
+                val = rand() & 0x7;
+            } while (val > 5);
 
-        // val will be between 0 and 5.
-        GAME_nextGems[i] = val + 1;
+            // val will be between 0 and 5.
+            GAME_nextGems[i] = val + 1;
+        }
     }
 }
 

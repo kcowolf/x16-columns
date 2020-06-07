@@ -8,7 +8,7 @@
 #include "GFX_vera.h"
 #include "SCRN.h"
 
-#define GEMS_COUNT 7
+#define GEMS_COUNT 8
 #define GEM0_TILEMAP 0xA000
 #define GEM1_TILEMAP 0xA008
 #define GEM2_TILEMAP 0xA010
@@ -16,15 +16,16 @@
 #define GEM4_TILEMAP 0xA020
 #define GEM5_TILEMAP 0xA028
 #define GEM6_TILEMAP 0xA030
+#define MAGICGEM_TILEMAP 0xA038
 
-#define EXPLODE0_TILEMAP 0xA038
-#define EXPLODE1_TILEMAP 0xA040
-#define EXPLODE2_TILEMAP 0xA048
-#define EXPLODE3_TILEMAP 0xA050
-#define EXPLODE4_TILEMAP 0xA058
-#define EXPLODE5_TILEMAP 0xA060
-#define EXPLODE6_TILEMAP 0xA068
-#define EXPLODE7_TILEMAP 0xA070
+#define EXPLODE0_TILEMAP 0xA040
+#define EXPLODE1_TILEMAP 0xA048
+#define EXPLODE2_TILEMAP 0xA050
+#define EXPLODE3_TILEMAP 0xA058
+#define EXPLODE4_TILEMAP 0xA060
+#define EXPLODE5_TILEMAP 0xA068
+#define EXPLODE6_TILEMAP 0xA070
+#define EXPLODE7_TILEMAP 0xA078
 
 #define BOARD_VISIBLE_ROWS 13
 
@@ -37,7 +38,6 @@
 #define NEXT_TILE_Y 2
 
 #define GEMS_MBANK 21
-#define GEMS_SPRITE 0
 
 #define GEM_PIXEL_W 16
 #define GEM_PIXEL_H 16
@@ -48,13 +48,20 @@
 #define MATCH_EXPLODE_FRAMES 16
 #define MATCH_TOTAL_FRAMES 32
 
+#define MAGIC_PALETTE_INDEX 5
+#define MAGIC_PALETTE_COUNT 6
+#define MAGIC_PALETTE_INITIAL_FRAMES 6
+
 static void animateMatches();
 static void clearGems();
 static void drawGems();
 static void drawNextGems();
 static void redrawBoard();
+static void updateMagicPalette();
 
 static uint8_t matchAnimationFrames;
+static uint8_t currentMagicPalette;
+static uint8_t magicPaletteFrames;
 
 static const uint16_t* GEM_TILEMAPS[GEMS_COUNT] =
 {
@@ -65,6 +72,7 @@ static const uint16_t* GEM_TILEMAPS[GEMS_COUNT] =
     (const uint16_t*)GEM4_TILEMAP,
     (const uint16_t*)GEM5_TILEMAP,
     (const uint16_t*)GEM6_TILEMAP,
+    (const uint16_t*)MAGICGEM_TILEMAP
 };
 
 static const uint16_t* EXPLODE_TILEMAPS[MATCH_EXPLODE_FRAMES / 2] =
@@ -81,13 +89,14 @@ static const uint16_t* EXPLODE_TILEMAPS[MATCH_EXPLODE_FRAMES / 2] =
 
 static const uint16_t GEM_SPRITE_BYTE_OFFSETS[GEMS_COUNT] =
 {
-    (0 * SPRITE_16x16_BYTES),
+    (0 * SPRITE_16x16_BYTES), // Empty
     (1 * SPRITE_16x16_BYTES),
     (2 * SPRITE_16x16_BYTES),
     (3 * SPRITE_16x16_BYTES),
     (4 * SPRITE_16x16_BYTES),
     (5 * SPRITE_16x16_BYTES),
-    (6 * SPRITE_16x16_BYTES)
+    (6 * SPRITE_16x16_BYTES),
+    (7 * SPRITE_16x16_BYTES), // Magic gem
 };
 
 static const uint8_t GEM_PALETTES[GEMS_COUNT] =
@@ -98,7 +107,42 @@ static const uint8_t GEM_PALETTES[GEMS_COUNT] =
     3,
     4,
     4,
-    4
+    4,
+    MAGIC_PALETTE_INDEX
+};
+
+static const uint16_t MAGIC_COLORS[MAGIC_PALETTE_COUNT][3] =
+{
+    {
+        0x0C01,
+        0x0E00,
+        0x0F75
+    },
+    {
+        0x0EA0,
+        0x0FB1,
+        0x0FFA
+    },
+    {
+        0x044F,
+        0x086F,
+        0x0ADF
+    },
+    {
+        0x0088,
+        0x00CC,
+        0x05FF
+    },
+    {
+        0x0B0C,
+        0x0E0E,
+        0x0FCF
+    },
+    {
+        0x00A1,
+        0x00C4,
+        0x06F5
+    }
 };
 
 bool SCRN_init()
@@ -146,6 +190,7 @@ bool SCRN_init()
     result = result && load_file_host(TMGEMS4_FILENAME, GEM4_TILEMAP);
     result = result && load_file_host(TMGEMS5_FILENAME, GEM5_TILEMAP);
     result = result && load_file_host(TMGEMS6_FILENAME, GEM6_TILEMAP);
+    result = result && load_file_host(TMGEMSM_FILENAME, MAGICGEM_TILEMAP);
     result = result && load_file_host(TMEXPL0_FILENAME, EXPLODE0_TILEMAP);
     result = result && load_file_host(TMEXPL1_FILENAME, EXPLODE1_TILEMAP);
     result = result && load_file_host(TMEXPL2_FILENAME, EXPLODE2_TILEMAP);
@@ -167,11 +212,16 @@ bool SCRN_init()
         return false;
     }
 
+    currentMagicPalette = 0;
+    magicPaletteFrames = MAGIC_PALETTE_INITIAL_FRAMES;
+
     return true;
 }
 
 void SCRN_update()
 {
+    updateMagicPalette();
+
     switch (GAME_state)
     {
         case GAME_INIT:
@@ -315,5 +365,24 @@ static void redrawBoard()
             gemTileAddr++;
             GFX_setForegroundTile((x * 2) + BOARD_TILE_X + 1, (y * 2) + BOARD_TILE_Y + 1, *gemTileAddr);
         }
+    }
+}
+
+static void updateMagicPalette()
+{
+    magicPaletteFrames--;
+    if (magicPaletteFrames == 0)
+    {
+        magicPaletteFrames = MAGIC_PALETTE_INITIAL_FRAMES;
+
+        currentMagicPalette++;
+        if (currentMagicPalette == MAGIC_PALETTE_COUNT)
+        {
+            currentMagicPalette = 0;
+        }
+
+        GFX_setColor(MAGIC_PALETTE_INDEX, 2, MAGIC_COLORS[currentMagicPalette][0]);
+        GFX_setColor(MAGIC_PALETTE_INDEX, 3, MAGIC_COLORS[currentMagicPalette][1]);
+        GFX_setColor(MAGIC_PALETTE_INDEX, 4, MAGIC_COLORS[currentMagicPalette][2]);
     }
 }
