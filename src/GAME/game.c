@@ -158,6 +158,9 @@ void GAME_update()
             GAME_state = GAME_CHECK_FOR_MATCHES;
             break;
         case GAME_GAME_OVER:
+            GAME_state = GAME_WAIT_FOR_GAME_OVER;
+            break;
+        case GAME_WAIT_FOR_GAME_OVER:
             break;
     }
 }
