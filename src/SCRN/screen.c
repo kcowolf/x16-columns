@@ -19,7 +19,7 @@
 #define GEM6_TILEMAP 0xA030
 #define MAGICGEM_TILEMAP 0xA038
 
-#define EXPLODE_TILEMAPS_COUNT 8
+#define EXPLODE_TILEMAPS_COUNT 9
 #define EXPLODE0_TILEMAP 0xA040
 #define EXPLODE1_TILEMAP 0xA048
 #define EXPLODE2_TILEMAP 0xA050
@@ -47,8 +47,8 @@
 #define SPRITE_16x16_BYTES 128
 
 #define MATCH_BLINK_FRAMES 16
-#define MATCH_EXPLODE_FRAMES 16
-#define MATCH_TOTAL_FRAMES 32
+#define MATCH_EXPLODE_FRAMES 18
+#define MATCH_TOTAL_FRAMES 34
 
 #define MAGIC_PALETTE_INDEX 5
 #define MAGIC_PALETTE_COUNT 6
@@ -91,6 +91,7 @@ static const uint16_t* GEM_TILEMAPS[GEMS_COUNT] =
 
 static const uint16_t* EXPLODE_TILEMAPS[EXPLODE_TILEMAPS_COUNT] =
 {
+    (const uint16_t*)EMPTYGEM_TILEMAP,
     (const uint16_t*)EXPLODE7_TILEMAP,
     (const uint16_t*)EXPLODE6_TILEMAP,
     (const uint16_t*)EXPLODE5_TILEMAP,
@@ -265,7 +266,7 @@ void SCRN_update()
             break;
         case GAME_GAME_OVER:
             animationFrames = 1;
-            explodeAllCurrentRow = BOARD_VISIBLE_ROWS + EXPLODE_TILEMAPS_COUNT + 1;
+            explodeAllCurrentRow = BOARD_VISIBLE_ROWS + EXPLODE_TILEMAPS_COUNT;
             clearNextGems();
             break;
         case GAME_WAIT_FOR_GAME_OVER:
@@ -279,8 +280,8 @@ void SCRN_update()
 static void animateExplodeAll()
 {
     uint8_t i;
-    uint8_t x;
-    uint8_t y;
+    uint8_t boardX;
+    uint8_t boardY; // Relative to the visible board (doesn't include the invisible rows at the top).
     const uint16_t* gemTileAddr;
 
     animationFrames--;
@@ -300,28 +301,27 @@ static void animateExplodeAll()
         {
             explodeAllCurrentRow--;
 
-            y = explodeAllCurrentRow;
+            boardY = explodeAllCurrentRow;
 
-            for (i = 0; i < EXPLODE_TILEMAPS_COUNT + 1; i++)
+            for (i = 0; i < EXPLODE_TILEMAPS_COUNT; i++)
             {
-                if (y < BOARD_VISIBLE_ROWS)
+                if (boardY < BOARD_VISIBLE_ROWS)
                 {
-                    if (i == 0)
-                    {
-                        gemTileAddr = EMPTYGEM_TILEMAP;
-                    }
-                    else
-                    {
-                        gemTileAddr = EXPLODE_TILEMAPS[i - 1];
-                    }
+                    gemTileAddr = EXPLODE_TILEMAPS[i];
 
-                    for (x = 0; x < GAME_BOARD_WIDTH; x++)
+                    for (boardX = 0; boardX < GAME_BOARD_WIDTH; boardX++)
                     {
-                        drawGem((x * 2) + BOARD_TILE_X, (y * 2) + BOARD_TILE_Y, gemTileAddr);
+                        drawGem((boardX * 2) + BOARD_TILE_X, (boardY * 2) + BOARD_TILE_Y, gemTileAddr);
                     }
                 }
 
-                y--;
+                if (boardY == 0)
+                {
+                    // Break out of the for-loop.  We've reached the top of the board.
+                    break;
+                }
+
+                boardY--;
             }
         }
     }
