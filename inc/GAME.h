@@ -14,6 +14,13 @@ typedef enum
 
 typedef enum
 {
+    GAME_FLASH_EASY,
+    GAME_FLASH_NORMAL,
+    GAME_FLASH_HARD
+} GAME_FlashDifficulty;
+
+typedef enum
+{
     GAME_INIT,               // SCRN will transition after drawing the board.
     GAME_WAIT_FOR_START,
     GAME_INIT_GEMS,
@@ -28,7 +35,9 @@ typedef enum
     GAME_HALT
 } GAME_State;
 
-void GAME_init(GAME_Mode mode);
+void GAME_init_original();
+
+void GAME_init_flash(GAME_FlashDifficulty difficulty, uint8_t height);
 
 void GAME_update();
 

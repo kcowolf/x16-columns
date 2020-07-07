@@ -56,6 +56,10 @@
 
 #define EXPLODE_ALL_FRAMES_PER_ROW 2
 
+// x, y coordinates relative to the board
+#define FLASH_GEM_X 3
+#define FLASH_GEM_Y 14
+
 static void animateExplodeAll();
 static void animateMatches();
 static void clearFallingGems();
@@ -69,13 +73,14 @@ static void drawGem
     );
 static void drawNextGems();
 static void redrawBoard();
+static void redrawFlashGem();
 static void updateMagicPalette();
 
 static uint8_t animationFrames;
 static uint8_t currentMagicPalette;
 static uint8_t magicPaletteFrames;
-
 static uint8_t explodeAllCurrentRow;
+static uint16_t gameTimer;
 
 static const uint16_t* GEM_TILEMAPS[GEMS_COUNT] =
 {
@@ -230,12 +235,16 @@ bool SCRN_init()
     currentMagicPalette = 0;
     magicPaletteFrames = MAGIC_PALETTE_INITIAL_FRAMES;
 
+    gameTimer = 0;
+
     return true;
 }
 
 void SCRN_update()
 {
     updateMagicPalette();
+    
+    gameTimer++;
 
     switch (GAME_state)
     {
@@ -248,6 +257,7 @@ void SCRN_update()
             break;
         case GAME_GEMS_FALLING:
             drawFallingGems();
+            redrawFlashGem();
             break;
         case GAME_CHECK_FOR_MATCHES:
             redrawBoard();
@@ -260,6 +270,7 @@ void SCRN_update()
             {
                 GAME_state = GAME_CLEAR_MATCHES;
             }
+            redrawFlashGem();
             break;
         case GAME_MATCHES_CLEARED:
             redrawBoard();
@@ -442,8 +453,33 @@ static void redrawBoard()
     {
         for (y = 0; y < BOARD_VISIBLE_ROWS; y++)
         {
-            drawGem((x * 2) + BOARD_TILE_X, (y * 2) + BOARD_TILE_Y, GEM_TILEMAPS[GAME_board[x][y + GAME_FIRST_VISIBLE_ROW]]);
+            if (x == FLASH_GEM_X && y + GAME_FIRST_VISIBLE_ROW == FLASH_GEM_Y)
+            {
+                redrawFlashGem();
+            }
+            else
+            {
+                drawGem((x * 2) + BOARD_TILE_X, (y * 2) + BOARD_TILE_Y, GEM_TILEMAPS[GAME_board[x][y + GAME_FIRST_VISIBLE_ROW]]);
+            }
         }
+    }
+}
+
+static void redrawFlashGem()
+{
+    // If this gem is part of a match, it is being animated.
+    if (GAME_state == GAME_WAIT_FOR_MATCHES && GAME_matches[FLASH_GEM_X][FLASH_GEM_Y] == 1)
+    {
+        return;
+    }
+
+    if (GAME_mode == GAME_FLASH && (gameTimer & 0x40))
+    {
+        drawGem((FLASH_GEM_X * 2) + BOARD_TILE_X, ((FLASH_GEM_Y - GAME_FIRST_VISIBLE_ROW) * 2) + BOARD_TILE_Y, EMPTYGEM_TILEMAP);
+    }
+    else
+    {
+        drawGem((FLASH_GEM_X * 2) + BOARD_TILE_X, ((FLASH_GEM_Y - GAME_FIRST_VISIBLE_ROW) * 2) + BOARD_TILE_Y, GEM_TILEMAPS[GAME_board[FLASH_GEM_X][FLASH_GEM_Y]]);
     }
 }
 

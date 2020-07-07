@@ -25,7 +25,7 @@ int main()
     initVera();
 
     INPT_init();
-    GAME_init(GAME_ORIGINAL);
+    GAME_init_flash(GAME_FLASH_EASY, 2);
     if (SCRN_init() == false)
     {
         // Failed to load resources.

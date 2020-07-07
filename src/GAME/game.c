@@ -17,6 +17,13 @@
 
 #define MAGIC_GEM_INITIAL_COUNT 128
 
+#define FLASH_EASY_GEM_MAX_INDEX 3
+#define FLASH_NORMAL_GEM_MAX_INDEX 4
+#define FLASH_HARD_GEM_MAX_INDEX 5
+#define FLASH_MIN_HEIGHT 2
+#define FLASH_MAX_HEIGHT 9
+#define ORIGINAL_GEM_MAX_INDEX 5
+
 uint8_t GAME_board[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
 uint8_t GAME_matches[GAME_BOARD_WIDTH][GAME_BOARD_HEIGHT];
 
@@ -35,38 +42,87 @@ uint8_t GAME_gemY;
 
 uint8_t magicGemCountdown;
 
+uint8_t gemMaxIndex;
+
 static uint8_t checkForMatches();
 static void checkInput();
 static void clearMatches();
 static void gravity();
+static void initCommon();
 static void setNextGems();
 static void setNextLevel();
 
 // TODO -- Set these
 const uint8_t levelFallTimers[LEVEL_FALL_TIMERS_COUNT] = { 40 };
 
-void GAME_init(GAME_Mode mode)
+void GAME_init_original()
+{
+    GAME_mode = GAME_ORIGINAL;
+    gemMaxIndex = ORIGINAL_GEM_MAX_INDEX;
+
+    initCommon();
+}
+
+void GAME_init_flash(GAME_FlashDifficulty difficulty, uint8_t height)
 {
     uint8_t x;
     uint8_t y;
+    uint8_t val;
+    uint8_t matchCount;
 
-    GAME_mode = mode;
+    GAME_mode = GAME_FLASH;
 
-    for (x = 0; x < GAME_BOARD_WIDTH; x++)
+    switch (difficulty)
     {
-        for (y = 0; y < GAME_BOARD_HEIGHT; y++)
-        {
-            GAME_board[x][y] = 0;
-            GAME_matches[x][y] = 0;
-        }
+        case GAME_FLASH_EASY:
+            gemMaxIndex = FLASH_EASY_GEM_MAX_INDEX;
+            break;
+        case GAME_FLASH_NORMAL:
+            gemMaxIndex = FLASH_NORMAL_GEM_MAX_INDEX;
+            break;
+        case GAME_FLASH_HARD:
+        // fallthrough is intentional
+        default:
+            gemMaxIndex = FLASH_HARD_GEM_MAX_INDEX;
+            break;
+    };
+
+    if (height < FLASH_MIN_HEIGHT)
+    {
+        height = FLASH_MIN_HEIGHT;
     }
 
-    setNextGems();  // Initialize next.
+    if (height > FLASH_MAX_HEIGHT)
+    {
+        height = FLASH_MAX_HEIGHT;
+    }
 
-    GAME_level = 0;
-    magicGemCountdown = MAGIC_GEM_INITIAL_COUNT;
+    // Call initCommon() here to clear out the board and match arrays.
+    // Must be done before adding height lines.
+    initCommon();
 
-    GAME_state = GAME_INIT;
+    // Add height lines
+    do
+    {
+        for (x = 0; x < GAME_BOARD_WIDTH; x++)
+        {
+            for (y = GAME_BOARD_HEIGHT - 1; y > GAME_BOARD_HEIGHT - height - 1; y--)
+            {
+                if (GAME_board[x][y] == 0)
+                {
+                    do
+                    {
+                        val = rand() & 0x7;
+                    } while (val > gemMaxIndex);
+
+                    GAME_board[x][y] = val + 1;
+                }
+            }
+        }
+
+        matchCount = checkForMatches();
+        clearMatches();
+    } while(matchCount != 0);
 }
 
 void GAME_update()
@@ -389,6 +445,28 @@ static void clearMatches()
     }
 }
 
+static void initCommon()
+{
+    uint8_t x;
+    uint8_t y;
+
+    for (x = 0; x < GAME_BOARD_WIDTH; x++)
+    {
+        for (y = 0; y < GAME_BOARD_HEIGHT; y++)
+        {
+            GAME_board[x][y] = 0;
+            GAME_matches[x][y] = 0;
+        }
+    }
+
+    setNextGems();  // Initialize next.
+
+    GAME_level = 0;
+    magicGemCountdown = MAGIC_GEM_INITIAL_COUNT;
+
+    GAME_state = GAME_INIT;
+}
+
 static void setNextGems()
 {
     uint8_t i;
@@ -417,9 +495,9 @@ static void setNextGems()
             do
             {
                 val = rand() & 0x7;
-            } while (val > 5);
+            } while (val > gemMaxIndex);
 
-            // val will be between 0 and 5.
+            // val will be between 0 and gemMaxIndex.
             GAME_nextGems[i] = val + 1;
         }
     }
